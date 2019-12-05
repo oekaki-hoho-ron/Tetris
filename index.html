@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>テトリス</title>
+    <link rel='stylesheet' href='style.css' />
+  </head>
+  <body>
+    
+    <!-- ゲームUI -->
+    <canvas width='300' height='600'></canvas>
+    <button id="playbutton" onclick="newGame()">Play</button>
+    <div id="score">0点</div>
+    <div id="about">
+      <ul>
+        <li>移動：← ↓ →</li>
+        <li>回転：↑</li>
+        <li>落下：Space</li>
+      </ul>
+    </div>
+    <div id="erase">0段</div>
+    <div id="timer">0秒</div>
+    
+    <!-- オープニング画面 & ゲームオーバー画面 -->
+    <div id="judge">
+      <img id="opning_title" src="op.png" width=300>
+    </div>
+    
+    <!-- サウンド -->
+    <audio id="clear_se" src="sound/clear.mp3" preload="auto"></audio>
+    <audio id="tick_se" src="sound/tick.mp3" preload="auto"></audio>
+    <audio id="start_se" src="sound/start.mp3" preload="auto"></audio>
+    <audio id="play_bgm" src="sound/bgm.mp3" preload="auto" loop></audio>
+    <audio id="lose_se" src="sound/lose.mp3" preload="auto"></audio>
+    <audio id="key_se" src="sound/key.wav" preload="auto"></audio>
+    <audio id="drop_se" src="sound/drop.wav" preload="auto"></audio>
+    
+    <!-- 外部ファイル読み込み -->
+    <script src='js/tetris.js'></script>
+    <script src='js/controller.js'></script>
+    <script src='js/render.js'></script>
+  </body>
+</html>

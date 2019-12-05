@@ -1,0 +1,109 @@
+body{
+  background:#263238;
+  margin:0;
+  padding:0;
+}
+
+canvas{
+  display:block;
+  margin:50px 50px 10px;
+  border:1px solid #263238;
+  background:#566c75;
+}
+
+#judge{
+  display:block;
+  width:300px;
+  height:600px;
+  position:absolute;
+  left: 0;
+  right: 0;
+  margin:51px 51px;
+  top:0;
+  color:rgba(38,50,56,0.7);
+  font-size:200px;
+  text-align:center;
+  font-weight:bold;
+  overflow:hidden;
+}
+
+#playbutton{
+  width:80px;
+  height:30px;
+  display:block;
+  margin:10px 10px 0 50px;
+  font-family:Arial,sans-serif;
+  font-size:20px;
+  font-weight:bold;
+  background:tomato;
+  cursor:pointer;
+  color:#000;
+  border:none;
+  border-radius:10px;
+  float:left;
+  animation:buttonFlash 1s linear infinite; /* buttonFlashという名前の点滅アニメーションを定義 */
+}
+@keyframes buttonFlash{ /* 点滅アニメーションのダイナミズムを設定 */
+  0%,100%{ /* 0と100の位置のスタイル */
+    filter:brightness(150%); /* 明度150% */
+  }
+  50%{ /* 50の位置のスタイル */
+    filter:brightness(80%); /* 明度80% */
+  }
+}
+
+
+#score{
+  display:block;
+  width:120px;
+  height:30px;
+  background:#ccc;
+  color:#263238;
+  border-radius:2px;
+  text-align:right;
+  padding-right:5px;
+  margin:10px 0 0 80px;
+  font-size:20px;
+  float:left;
+}
+
+#erase{
+  display:block;
+  width:100px;
+  height:30px;
+  background:#ccc;
+  color:#263238;
+  border-radius:2px;
+  text-align:right;
+  padding-right:5px;
+  margin:10px 0 0 40px;
+  font-size:20px;
+  float:left;
+}
+
+#timer{
+  display:block;
+  width:100px;
+  height:30px;
+  background:#ccc;
+  color:#263238;
+  border-radius:2px;
+  text-align:right;
+  padding-right:5px;
+  margin:10px 0 0 40px;
+  font-size:20px;
+  float:left;
+}
+
+#about{
+  float:left;
+  width:150px;
+  margin:0px 0 0 50px;
+  font-size:20px;
+  color:#000;
+}
+
+#about ul{
+  list-style:none;
+  padding-left:0;
+}
