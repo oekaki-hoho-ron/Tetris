@@ -2,6 +2,10 @@
 
 たった224行で作られたと紹介されていた[2D tetris game in HTML5 canvas](https://github.com/dionyziz/canvas-tetris)をベースに、勉強のためにいろいろアレンジしたものです。
 
+## [プレイする](https://oekaki-hoho-ron.github.io/Tetris/)
+
+![サムネ](https://oekaki-hoho-ron.github.io/Tetris/thumb.png)
+
 まだ自分でアルゴリズムを考えるのにかなりの時間がかかりますが、欲しい機能リストは考えています。イメージした機能を実装できるかというトレーニングのつもりでやっているので、最終的には多機能テトリスになると思います。
 
 - 全消しボーナス（高得点 or アイテムプレゼント）
@@ -35,7 +39,3 @@
 - 全クリ特典（ED・エクストラモード・実績）
 - RPG要素（スコア貯蓄システム・アイテムショップで便利アイテム購入・セーブデータの概念）
 - 通信対戦（これ無理だろ）
-
-## [プレイする](https://oekaki-hoho-ron.github.io/Tetris/)
-
-![サムネ](https://oekaki-hoho-ron.github.io/Tetris/thumb.png)
