@@ -244,7 +244,8 @@ function newGame(){ // 新しくゲーム開始する方法として
   document.getElementById("playbutton").disabled = true; // Playボタンが初期化される
   document.getElementById('playbutton').style.animation = 'none'; // ゲームプレイ中はPlayボタンは点滅しない
   player.score = 0; // 獲得スコアを初期化
-  updateScore(); // 獲得スコア表示を初期化
+  player.erase = 0; // 消去数を初期化
+  updateScore(); // 獲得スコア表示・消去数表示を初期化
   sec = 0; // 秒数タイマーのカウントを初期化
   document.getElementById('timer').innerHTML = sec + '秒'; // 秒数タイマーの表示を初期化
   count(); // 秒数タイマー動作開始
@@ -276,7 +277,7 @@ const player = { // 他のプロパティつかうことあるかな？
 
 function updateScore() { // スコア更新
     document.getElementById('score').innerText = player.score + '点'; // スコア欄に現在の獲得スコアを表示
-    document.getElementById('erase').innerText = player.erase + '段';
+    document.getElementById('erase').innerText = player.erase + '段'; // 消去数欄に現在の消去数を表示
 }
 
 
