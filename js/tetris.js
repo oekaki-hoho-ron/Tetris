@@ -1,3 +1,4 @@
+let a;
 let COLS = 10,ROWS = 20; // ボードのマス目サイズ設定
 let board = [];
 
@@ -207,15 +208,19 @@ function keyPress(key){ // キーコンフィグとSE
       case 'pose': // xキーを押したとき
         if(document.getElementById("playbutton").disabled == true){ // ゲーム中に限り
           if(gamePose == true){ // かつ、ポーズ判定が真の場合
-            document.getElementById('play_bgm').pause(); // 
+            document.getElementById('play_bgm').pause(); // BGM一時停止
             document.getElementById('start_se').currentTime = 0; // BGM再生位置を頭出し
             document.getElementById('start_se').play(); // ゲーム開始SE
             clearTimeout(interval); // tick()を一時停止させる
             clearTimeout(timerStart); // timer()を一時停止させる
             document.getElementById('pose_label_dark').style.display = 'block'; // ポーズ画面を表示
+            ctx.clearRect(0,0,W,H);
             gamePose = false; // もう一度xを押したらtick()再開するようポーズ判定を真にしておく
+            
+            // ポーズ中はボードに積もったブロックを非表示（タイム連打対策）
+            
           }else if(gamePose == false){ // また、ポーズ判定が偽の場合
-            document.getElementById('play_bgm').play(); // 
+            document.getElementById('play_bgm').play(); // BGM再開
             document.getElementById('start_se').currentTime = 0; // BGM再生位置を頭出し
             document.getElementById('start_se').play(); // ゲーム開始SE
             document.getElementById('pose_label_dark').style.display = 'none'; // ポーズ画面を非表示
@@ -226,10 +231,13 @@ function keyPress(key){ // キーコンフィグとSE
               sec += 0.5; // 秒数タイマー0.5秒（tick()1カウント分）加算（タイム連打対策）
               document.getElementById('timer').innerHTML = sec.toFixed(0) + '秒'; // 秒数タイマー欄に現在の秒数を表示（小数点以下切り捨て）
             }
-            if(freezed == true){ // 落下ブロックが
+            if(freezed == true){ // 落下ブロックが???
                newBlock()
             }
             gamePose = true; // もう一度xを押したらtick()一時停止するようポーズ判定を偽にしておく
+            
+            // ポーズ直前のボードの状態を再描画
+            
           }
         }
         break;
@@ -298,16 +306,16 @@ function newGame(){ // 新しくゲーム開始する方法として
   player.erase = 0; // 消去数を初期化
   updateScore(); // 獲得スコア表示・消去数表示を初期化
   sec = 0; // 秒数タイマーのカウントを初期化
-  document.getElementById('timer').innerHTML = sec + '秒'; // 秒数タイマーの表示を初期化
-  count(); // 秒数タイマー動作開始
+  updateScore(); // 秒数タイマーの表示を初期化
+  setTimeout(count,500); // 秒数タイマー動作開始（ゲーム開始直後の1秒カウントが0.5秒ほど短いバグあり（応急処置済））
   lose = false; // lose変数を偽に戻す
   gameOver(); // lose = falseなのでゲームオーバー画面を消去
   canvas.style.background = '#566b75'; // ボード色を初期化
   init(); // ボードを初期化
   clearAllIntervals(); // tick再起動
-  intervalRender = setInterval(render,30);
+  intervalRender = setInterval(render,30); // 0.03秒毎に画面描画
   newBlock(); // 落下ブロック生成を開始
-  interval = setInterval(tick,500); // tickカウント開始
+  interval = setInterval(tick,500); // tickカウント開始（0.5秒毎）
 }
 
 function clearAllIntervals(){ // タイマー再起動する方法として
@@ -328,7 +336,7 @@ const player = { // 他のプロパティつかうことあるかな？
 
 function updateScore() { // スコア更新
     document.getElementById('score').innerText = player.score + '点'; // スコア欄に現在の獲得スコアを表示
-    document.getElementById('erase').innerText = player.erase + '段'; // 消去数欄に現在の消去数を表示
+    document.getElementById('erase').innerText = player.erase + '行'; // 消去数欄に現在の消去数を表示
 }
 
 
