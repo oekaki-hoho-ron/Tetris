@@ -17,24 +17,45 @@
   <body>
     
     <div id="wrap">
-    <!-- ゲームUI -->
-    <canvas width='300' height='600'></canvas>
-    <button id="playbutton" onclick="newGame()">Play</button>
-    <div id="score">0点</div>
-    <div id="about">
-      <ul>
-        <li>移動：← ↓ →</li>
-        <li>回転：↑</li>
-        <li>落下：Space</li>
-      </ul>
+      <!-- ゲームUI -->
+      <canvas width='300' height='600'></canvas>
+      <button id="playbutton" onclick="newGame()">Play</button>
+      <div id="score">0点</div>
+      <div id="about">
+      <table id="key_config">
+        <tr>
+          <td>移動</td>
+          <td>←↓→</td>
+        </tr>
+<!--        <tr>
+          <td>スムーズ移動</td>
+          <td>shift + ←↓→</td>
+        </tr>
+-->        <tr>
+          <td>回転</td>
+          <td>↑</td>
+        </tr>
+        <tr>
+          <td>落下</td>
+          <td>z</td>
+        </tr>
+        <tr>
+          <td>一時停止</td>
+          <td>x</td>
+        </tr>
+      </table>
     </div>
-    <div id="erase">0段</div>
-    <div id="timer">0秒</div>
+      <div id="erase">0段</div>
+      <div id="timer">0秒</div>
     
-    <!-- オープニング画面 & ゲームオーバー画面 -->
-    <div id="judge">
-      <img id="opning_title" src="op.png" width=300>
-    </div>
+      <!-- オープニング画面 & ゲームオーバー画面 -->
+      <div id="judge">
+        <img id="opening_title" src="op.png" width=300>
+        <div id="gameover_label">Game Over</div>
+      </div>
+      <div id="pose_label_dark">
+        <div id="pose_label_text">POSE</div>
+      </div>
     </div>
     
     <!-- サウンド -->

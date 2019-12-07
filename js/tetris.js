@@ -7,8 +7,13 @@ let intervalRender;
 let current; // 落下中ブロック
 let currentX,currentY; // 落下中ブロック位置
 let freezed; // ボードとブロックの当たり判定変数（true,false）
+
 let lose; // 負け判定変数（true,false）
 let score = '0'; // スコア
+let gamePose = true; // ポーズ画面判定
+
+let sec = 0; // 秒数タイマー用の累積経過時間の変数
+let timerStart; // 秒数タイマーのsetInterval()
 
 let colors = ['#7fbfff','#ffbf7f','#7fffff','#ffff7f','#ff7f7f','#7fffbf','#bf7fff']; // 落下ブロック色パターン
 let shapes = [ // 落下ブロック形状パターン
@@ -78,32 +83,35 @@ function init(){    // ボードの初期化
 }
 
 function tick(){ // 1フレームごとの処理として
-  document.getElementById('tick_se').currentTime = 0;
-  document.getElementById('tick_se').play();
-  if(valid(0,1)){
-    ++currentY;
+  document.getElementById('tick_se').currentTime = 0; // tickのカウント音を頭出し
+  document.getElementById('tick_se').play(); // tickのカウント音を再生
+  if(valid(0,1)){ // valid(offsetY,offsetX)が????のとき
+    ++currentY; // 1マス落下
   }
-  else{
+  else{ // そうでない時?????
     freeze(); // 落下ブロックを床で固定
-    valid(0,1);
-    clearLines();
-    if(lose){ // 
-      clearAllIntervals();
-      return false;
+    valid(0,1); // 次の落下ブロックのために落下できる状態に戻しておく
+    clearLines(); // 行を消すかどうか検証
+    if(lose){ // もし落下ブロックが床で固定されたときlose = trueになったら
+      clearAllIntervals(); // ゲームを停止
+      return false; // lose = falseに戻しておく
     }
-    newBlock();
+    newBlock(); // 落下ブロックが床で固定される　かつ　ゲームオーバーでなければ　新規ブロック生成
   }
 }
 
 function freeze(){ // 落下ブロックを床で固定
-  for(let y=0; y<4; ++y){
-    for(let x=0; x<4; ++x){
-      if(current[y][x]){
-        board[y + currentY][x + currentX] = current[y][x];
+  for(let y=0; y<4; ++y){ // 落下ブロックの4x4の行を1マスずつ検証
+    for(let x=0; x<4; ++x){ // 落下ブロックの4x4の列を1マスずつ検証
+      if(current[y][x]){ // もし落下ブロックの4x4のうち現在検証中のマスについて
+        board[y + currentY][x + currentX] = current[y][x]; // 4x4の現在の行列+落下ブロック位置=4x4の現在の行列（つまり落下ブロック位置）
       }
     }
   }
   freezed = true;
+  // if(){
+    // 余白残り5行のときエマージェンシー
+  //}
 }
 
 function rotate(current){ // 戻りは、回転した形状「現在」を反時計回りに垂直に回転させます
@@ -137,6 +145,9 @@ function clearLines(){ // 行が埋められているかどうかを確認し、
         }
       }
       ++y;
+      //if(){
+        // 全消しボーナス加点処理
+      //}
     }
   }
 }
@@ -145,43 +156,82 @@ function keyPress(key){ // キーコンフィグとSE
   if(lose == false){ // ゲーム中の場合キー操作可能
     switch(key){
       case 'left': // 左移動キー
-        document.getElementById('key_se').currentTime = 0;
-        document.getElementById('key_se').play();
-        if(valid(-1)){
-          --currentX;
+        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          document.getElementById('key_se').currentTime = 0;
+          document.getElementById('key_se').play();
+          if(valid(-1)){
+            --currentX;
+          }
         }
         break;
       case 'right': // 右移動キー
-        document.getElementById('key_se').currentTime = 0;
-        document.getElementById('key_se').play();
-        if(valid(1)){
-          ++currentX;
+        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          document.getElementById('key_se').currentTime = 0;
+          document.getElementById('key_se').play();
+          if(valid(1)){
+            ++currentX;
+          }
         }
         break;
       case 'down': // 下移動キー
-        document.getElementById('key_se').currentTime = 0;
-        document.getElementById('key_se').play();
-        if(valid(0,1)){
-          ++currentY;
+        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          document.getElementById('key_se').currentTime = 0;
+          document.getElementById('key_se').play();
+          if(valid(0,1)){
+            ++currentY;
+          }
         }
         break;
       case 'rotate': // 回転キー
-        document.getElementById('key_se').currentTime = 0;
-        document.getElementById('key_se').play();
-        let rotated = rotate(current);
-        if(valid(0,0,rotated)){
-          current = rotated;
+        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          document.getElementById('key_se').currentTime = 0;
+          document.getElementById('key_se').play();
+          let rotated = rotate(current);
+          if(valid(0,0,rotated)){
+            current = rotated;
+          }
         }
         break;
       case 'drop': // 強制落下キー
-        document.getElementById('drop_se').currentTime = 0;
-        document.getElementById('drop_se').play();
-        while(valid(0,1)){ // 床当たり判定があるまで繰り返す
-          ++currentY; // y移動
-          player.score += 1; // スコア+1点（高所から強制落下するほどwhileが回って高得点）
-          updateScore(); // スコア表示更新
+        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          document.getElementById('drop_se').currentTime = 0;
+          document.getElementById('drop_se').play();
+          while(valid(0,1)){ // 床当たり判定があるまで繰り返す
+            ++currentY; // y移動
+            player.score += 1; // スコア+1点（高所から強制落下するほどwhileが回って高得点）
+            updateScore(); // スコア表示更新
+          }
+          tick(); // 強制落下でtickのタイミングがずれたので初期化
         }
-        tick(); // 強制落下でtickのタイミングがずれたので初期化
+        break;
+      case 'pose': // xキーを押したとき
+        if(document.getElementById("playbutton").disabled == true){ // ゲーム中に限り
+          if(gamePose == true){ // かつ、ポーズ判定が真の場合
+            document.getElementById('play_bgm').pause(); // 
+            document.getElementById('start_se').currentTime = 0; // BGM再生位置を頭出し
+            document.getElementById('start_se').play(); // ゲーム開始SE
+            clearTimeout(interval); // tick()を一時停止させる
+            clearTimeout(timerStart); // timer()を一時停止させる
+            document.getElementById('pose_label_dark').style.display = 'block'; // ポーズ画面を表示
+            gamePose = false; // もう一度xを押したらtick()再開するようポーズ判定を真にしておく
+          }else if(gamePose == false){ // また、ポーズ判定が偽の場合
+            document.getElementById('play_bgm').play(); // 
+            document.getElementById('start_se').currentTime = 0; // BGM再生位置を頭出し
+            document.getElementById('start_se').play(); // ゲーム開始SE
+            document.getElementById('pose_label_dark').style.display = 'none'; // ポーズ画面を非表示
+            interval = setInterval(tick,500); // tick()を再始動させる
+            count(); // timer()を再始動させるためにcount()を呼び出す
+            if(valid(0,1)){ // もし床の当たり判定がなければ
+              ++currentY; // ブロックを1マス落下（タイム連打対策）
+              sec += 0.5; // 秒数タイマー0.5秒（tick()1カウント分）加算（タイム連打対策）
+              document.getElementById('timer').innerHTML = sec.toFixed(0) + '秒'; // 秒数タイマー欄に現在の秒数を表示（小数点以下切り捨て）
+            }
+            if(freezed == true){ // 落下ブロックが
+               newBlock()
+            }
+            gamePose = true; // もう一度xを押したらtick()一時停止するようポーズ判定を偽にしておく
+          }
+        }
         break;
     }
   }else if(lose == false){ // スタート前およびゲームオーバー中はキー操作不可
@@ -191,26 +241,26 @@ function keyPress(key){ // キーコンフィグとSE
 function gameOver(){ // ゲームオーバー画面を表示する方法として
   if(lose == true){ // lose変数が真のとき
     document.getElementById('play_bgm').pause(); // BGM停止
-    document.getElementById("judge").textContent = '終了'; // ゲームオーバー画面を表示
+    document.getElementById('gameover_label').style.display = 'block'; // ゲームオーバー画面を表示
     canvas.style.background = '#f44'; // ゲームオーバーの赤画面エフェクトを描画
     document.getElementById('lose_se').play(); // ゲームオーバーSEを再生
     document.getElementById('playbutton').style.animation = 'buttonFlash 1s linear infinite'; // ゲームオーバーしたらPlayボタン点滅再開
     clearInterval(); // 秒数タイマー停止
   }else if(lose == false){ // lose変数が真でないとき
-    document.getElementById("judge").textContent = ""; // ボード上に何も（OP画面も）表示しない
+    document.getElementById('gameover_label').style.display = 'none'; // ボード上に何も（OP画面も）表示しない
   }
 }
 
 function valid(offsetX,offsetY,newCurrent){ // 現在の形状の結果の位置が実現可能かどうかをチェックします
-  offsetX = offsetX || 0;
+  offsetX = offsetX || 0; // ?xもしくは0
   offsetY = offsetY || 0;
-  offsetX = currentX + offsetX;
-  offsetY = currentY + offsetY;
+  offsetX = currentX + offsetX; // ?x = 落下ブロックx位置 + ?x
+  offsetY = currentY + offsetY; // ?y = 落下ブロックy位置 + ?y
   newCurrent = newCurrent || current;
 
   for(let y=0; y<4; ++y){
     for(let x=0; x<4; ++x){
-      if(newCurrent[y][x]){
+      if(newCurrent[y][x]){ // もし1カウント後の落下ブロック位置が????
         if(
           typeof board[y + offsetY] == 'undefined'
           || typeof board[y + offsetY][x + offsetX] == 'undefined'
@@ -233,6 +283,7 @@ function valid(offsetX,offsetY,newCurrent){ // 現在の形状の結果の位置
 
 
 function newGame(){ // 新しくゲーム開始する方法として
+  document.getElementById('opening_title').style.display = 'none';
   document.getElementById('lose_se').volume = 0.5; // サウンド音量調整
   document.getElementById('key_se').volume = 0.5;
   document.getElementById('drop_se').volume = 0.5;
@@ -281,15 +332,14 @@ function updateScore() { // スコア更新
 }
 
 
-let sec = 0; // 累積経過時間の変数
 function count(){ // 秒数タイマーを動作させるなら
   function timer(){ // 秒数タイマーを表示するなら
-    sec++;   // カウントアップ
+    sec += 0.1;   // カウントアップ
     if(lose == false){ // ゲームプレイ中は
-      document.getElementById('timer').innerHTML = sec + '秒'; // 秒数タイマー欄に現在の秒数を表示
+      document.getElementById('timer').innerHTML = sec.toFixed(0) + '秒'; // 秒数タイマー欄に現在の秒数を表示（小数点以下切り捨て）
     }else if(lose == true){ // ゲームオーバーになったら
       clearInterval(timerStart); // 秒数タイマーを止める
     }
   }
-  const timerStart = setInterval(timer,1000); // 1秒おきにカウントアップして秒数タイマー欄に表示する関数を実行
+  timerStart = setInterval(timer,100); // 1秒おきにカウントアップして秒数タイマー欄に表示する関数を実行
 }
