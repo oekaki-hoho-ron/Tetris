@@ -1,23 +1,22 @@
-let a;
-let COLS = 10,ROWS = 20; // ボードのマス目サイズ設定
-let board = [];
+let a,
+    COLS = 10,ROWS = 20, // ボードのマス目サイズ設定
+    board = [],
+    interval,
+    intervalRender,
 
-let interval;
-let intervalRender;
+    current, // 落下中ブロック
+    currentX,currentY, // 落下中ブロック位置
+    freezed, // ボードとブロックの当たり判定変数（true,false）
 
-let current; // 落下中ブロック
-let currentX,currentY; // 落下中ブロック位置
-let freezed; // ボードとブロックの当たり判定変数（true,false）
+    lose, // 負け判定変数（true,false）
+    points = '0', // スコア
+    gamePose = false, // ポーズ画面判定
 
-let lose; // 負け判定変数（true,false）
-let score = '0'; // スコア
-let gamePose = true; // ポーズ画面判定
+    sec = 0, // 秒数タイマー用の累積経過時間の変数
+    timerStart, // 秒数タイマーのsetInterval()
 
-let sec = 0; // 秒数タイマー用の累積経過時間の変数
-let timerStart; // 秒数タイマーのsetInterval()
-
-let colors = ['#7fbfff','#ffbf7f','#7fffff','#ffff7f','#ff7f7f','#7fffbf','#bf7fff']; // 落下ブロック色パターン
-let shapes = [ // 落下ブロック形状パターン
+    colors = ['#7fbfff','#ffbf7f','#7fffff','#ffff7f','#ff7f7f','#7fffbf','#bf7fff'], // 落下ブロック色パターン
+    shapes = [ // 落下ブロック形状パターン
   [0,0,0,0,
    1,1,1,1,
    0,0,0,0,
@@ -99,6 +98,7 @@ function tick(){ // 1フレームごとの処理として
     }
     newBlock(); // 落下ブロックが床で固定される　かつ　ゲームオーバーでなければ　新規ブロック生成
   }
+  calculation();
 }
 
 function freeze(){ // 落下ブロックを床で固定
@@ -137,8 +137,8 @@ function clearLines(){ // 行が埋められているかどうかを確認し、
     }
     if(rowFilled){
       document.getElementById('clear_se').play();
-      player.score += 100; // 1列消したらスコア+100点
-      player.erase += 1; // 1列消したら消去数+1段
+      player.points += 100; // 1列消したらスコア+100点
+      player.erased += 1; // 1列消したら消去数+1段
       updateScore(); // 現在の獲得スコアを表示
       for(let yy=y; yy>0; --yy){
         for(let x=0; x<COLS; ++x){
@@ -153,40 +153,43 @@ function clearLines(){ // 行が埋められているかどうかを確認し、
   }
 }
 
+function keySE(soundType){
+  document.getElementById(soundType).currentTime = 0;
+  document.getElementById(soundType).play();
+}
+
 function keyPress(key){ // キーコンフィグとSE
   if(lose == false){ // ゲーム中の場合キー操作可能
     switch(key){
       case 'left': // 左移動キー
-        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
-          document.getElementById('key_se').currentTime = 0;
-          document.getElementById('key_se').play();
+        if(!gamePose){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          keySE('key_se');
+//          document.getElementById('key_se').currentTime = 0;
+//          document.getElementById('key_se').play();
           if(valid(-1)){
             --currentX;
           }
         }
         break;
       case 'right': // 右移動キー
-        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
-          document.getElementById('key_se').currentTime = 0;
-          document.getElementById('key_se').play();
+        if(!gamePose){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          keySE('key_se');
           if(valid(1)){
             ++currentX;
           }
         }
         break;
       case 'down': // 下移動キー
-        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
-          document.getElementById('key_se').currentTime = 0;
-          document.getElementById('key_se').play();
+        if(!gamePose){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          keySE('key_se');
           if(valid(0,1)){
             ++currentY;
           }
         }
         break;
       case 'rotate': // 回転キー
-        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
-          document.getElementById('key_se').currentTime = 0;
-          document.getElementById('key_se').play();
+        if(!gamePose){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          keySE('key_se');
           let rotated = rotate(current);
           if(valid(0,0,rotated)){
             current = rotated;
@@ -194,53 +197,55 @@ function keyPress(key){ // キーコンフィグとSE
         }
         break;
       case 'drop': // 強制落下キー
-        if(gamePose == true){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
-          document.getElementById('drop_se').currentTime = 0;
-          document.getElementById('drop_se').play();
+        if(!gamePose){ // ポーズ画面でないときに限り（←真偽が逆だと思うんだけどなぜか正常に動作する・・・）
+          keySE('drop_se');
           while(valid(0,1)){ // 床当たり判定があるまで繰り返す
             ++currentY; // y移動
-            player.score += 1; // スコア+1点（高所から強制落下するほどwhileが回って高得点）
+            player.points += 1; // スコア+1点（高所から強制落下するほどwhileが回って高得点）
             updateScore(); // スコア表示更新
           }
           tick(); // 強制落下でtickのタイミングがずれたので初期化
         }
         break;
+
+        
+        
       case 'pose': // xキーを押したとき
-        if(document.getElementById("playbutton").disabled == true){ // ゲーム中に限り
-          if(gamePose == true){ // かつ、ポーズ判定が真の場合
-            document.getElementById('play_bgm').pause(); // BGM一時停止
-            document.getElementById('start_se').currentTime = 0; // BGM再生位置を頭出し
-            document.getElementById('start_se').play(); // ゲーム開始SE
-            clearTimeout(interval); // tick()を一時停止させる
-            clearTimeout(timerStart); // timer()を一時停止させる
-            document.getElementById('pose_label_dark').style.display = 'block'; // ポーズ画面を表示
-            ctx.clearRect(0,0,W,H);
-            gamePose = false; // もう一度xを押したらtick()再開するようポーズ判定を真にしておく
+        if(document.getElementById("playbutton").disabled){ // ゲーム中に限り（中身がtrueのとき）
+          if(!gamePose){ // かつ、ポーズ判定が真の場合
+              document.getElementById('play_bgm').pause(); // BGM一時停止
+              keySE('start_se');
+              clearTimeout(interval); // tick()を一時停止させる
+              clearTimeout(timerStart); // timer()を一時停止させる
+              document.getElementById('pose_label_dark').style.display = 'block'; // ポーズ画面を表示
+              ctx.clearRect(0,0,W,H);
+              gamePose = true; // もう一度xを押したらtick()再開するようポーズ判定を真にしておく
+              // ポーズ中はボードに積もったブロックを非表示（タイム連打対策）
+          }else if(gamePose){ // また、ポーズ判定が偽の場合
+              document.getElementById('play_bgm').play(); // BGM再開
+              keySE('start_se');
+              document.getElementById('pose_label_dark').style.display = 'none'; // ポーズ画面を非表示
+              interval = setInterval(tick,500); // tick()を再始動させる
+              count(); // timer()を再始動させるためにcount()を呼び出す
+              if(valid(0,1)){ // もし床の当たり判定がなければ
+                ++currentY; // ブロックを1マス落下（タイム連打対策）
+                sec += 0.5; // 秒数タイマー0.5秒（tick()1カウント分）加算（タイム連打対策）
+                document.getElementById('timer').innerHTML = sec.toFixed(0) + '秒'; // 秒数タイマー欄に現在の秒数を表示（小数点以下切り捨て）
+              }
+              if(freezed == true){ // 落下ブロックが???
+                newBlock()
+              }
+              gamePose = false; // もう一度xを押したらtick()一時停止するようポーズ判定を偽にしておく
             
-            // ポーズ中はボードに積もったブロックを非表示（タイム連打対策）
-            
-          }else if(gamePose == false){ // また、ポーズ判定が偽の場合
-            document.getElementById('play_bgm').play(); // BGM再開
-            document.getElementById('start_se').currentTime = 0; // BGM再生位置を頭出し
-            document.getElementById('start_se').play(); // ゲーム開始SE
-            document.getElementById('pose_label_dark').style.display = 'none'; // ポーズ画面を非表示
-            interval = setInterval(tick,500); // tick()を再始動させる
-            count(); // timer()を再始動させるためにcount()を呼び出す
-            if(valid(0,1)){ // もし床の当たり判定がなければ
-              ++currentY; // ブロックを1マス落下（タイム連打対策）
-              sec += 0.5; // 秒数タイマー0.5秒（tick()1カウント分）加算（タイム連打対策）
-              document.getElementById('timer').innerHTML = sec.toFixed(0) + '秒'; // 秒数タイマー欄に現在の秒数を表示（小数点以下切り捨て）
-            }
-            if(freezed == true){ // 落下ブロックが???
-               newBlock()
-            }
-            gamePose = true; // もう一度xを押したらtick()一時停止するようポーズ判定を偽にしておく
-            
-            // ポーズ直前のボードの状態を再描画
-            
+              // ポーズ直前のボードの状態を再描画
           }
         }
         break;
+        
+        
+        
+        
+        
     }
   }else if(lose == false){ // スタート前およびゲームオーバー中はキー操作不可
   }
@@ -298,12 +303,12 @@ function newGame(){ // 新しくゲーム開始する方法として
   document.getElementById('clear_se').volume = 0.3;
   document.getElementById('tick_se').volume = 0.2;
   document.getElementById('start_se').play(); // ゲーム開始SE
-  document.getElementById('play_bgm').currentTime = 0; // BGM再生位置を頭出し
-  document.getElementById('play_bgm').play(); // BGM再生
+  keySE('play_bgm');
+  keySE('start_se');
   document.getElementById("playbutton").disabled = true; // Playボタンが初期化される
   document.getElementById('playbutton').style.animation = 'none'; // ゲームプレイ中はPlayボタンは点滅しない
-  player.score = 0; // 獲得スコアを初期化
-  player.erase = 0; // 消去数を初期化
+  player.points = 0; // 獲得スコアを初期化
+  player.erased = 0; // 消去数を初期化
   updateScore(); // 獲得スコア表示・消去数表示を初期化
   sec = 0; // 秒数タイマーのカウントを初期化
   updateScore(); // 秒数タイマーの表示を初期化
@@ -323,26 +328,16 @@ function clearAllIntervals(){ // タイマー再起動する方法として
   clearInterval(intervalRender);
 }
 
-
-
-
-
-const player = { // 他のプロパティつかうことあるかな？
-  pos:{x:0, y:0},
-  matrix:null,
-  score:0, // 現在の獲得スコア
-  erase:0 // 消去した段数
+const player = {points:0,erased:0}; // {現在の獲得スコア, 消去した段数}
+  
+function updateScore(){ // スコア更新
+  document.getElementById('points').innerText = player.points + '点'; // スコア欄に現在の獲得スコアを表示
+  document.getElementById('erased').innerText = player.erased + '段'; // 消去数欄に現在の消去数を表示
 }
-
-function updateScore() { // スコア更新
-    document.getElementById('score').innerText = player.score + '点'; // スコア欄に現在の獲得スコアを表示
-    document.getElementById('erase').innerText = player.erase + '行'; // 消去数欄に現在の消去数を表示
-}
-
 
 function count(){ // 秒数タイマーを動作させるなら
   function timer(){ // 秒数タイマーを表示するなら
-    sec += 0.1;   // カウントアップ
+    sec += 0.1; // カウントアップ
     if(lose == false){ // ゲームプレイ中は
       document.getElementById('timer').innerHTML = sec.toFixed(0) + '秒'; // 秒数タイマー欄に現在の秒数を表示（小数点以下切り捨て）
     }else if(lose == true){ // ゲームオーバーになったら
@@ -350,4 +345,9 @@ function count(){ // 秒数タイマーを動作させるなら
     }
   }
   timerStart = setInterval(timer,100); // 1秒おきにカウントアップして秒数タイマー欄に表示する関数を実行
+}
+
+function calculation(){
+  let calScore = player.points * player.erased / sec;
+  document.getElementById('score').innerHTML = calScore.toFixed(0);
 }
